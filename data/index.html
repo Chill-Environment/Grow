@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🌱 Grow Control - Configuración</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #F4F6F9;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .container {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 560px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #E8ECF4;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1A1A2E;
+            text-align: center;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6C757D;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+
+        .section {
+            background: #F8FAFE;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #E8ECF4;
+        }
+
+        .section h3 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #1A1A2E;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 13px;
+            color: #1A1A2E;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #E8ECF4;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background: #FFFFFF;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0052CC;
+            box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #0052CC;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #0041a8;
+            transform: translateY(-1px);
+        }
+
+        .status {
+            text-align: center;
+            padding: 12px;
+            margin-top: 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status.success {
+            background: #00A86B;
+            color: white;
+            display: block;
+        }
+
+        .status.error {
+            background: #E53935;
+            color: white;
+            display: block;
+        }
+
+        hr {
+            margin: 24px 0 16px 0;
+            border: none;
+            border-top: 1px solid #E8ECF4;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 12px;
+            color: #6C757D;
+        }
+
+        small {
+            font-size: 11px;
+            color: #6C757D;
+            display: block;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 Grow Control</h1>
+        <div class="subtitle">Configuración inicial del sistema</div>
+        
+        <form id="configForm">
+            <div class="section">
+                <h3>📡 WiFi</h3>
+                <div class="form-group">
+                    <label>SSID</label>
+                    <input type="text" name="ssid" placeholder="Nombre de tu red WiFi" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="pass" placeholder="Contraseña WiFi">
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>📨 MQTT (Mosquitto)</h3>
+                <div class="form-group">
+                    <label>Servidor</label>
+                    <input type="text" name="mqtt_server" placeholder="192.168.1.x" required>
+                </div>
+                <div class="form-group">
+                    <label>Puerto</label>
+                    <input type="text" name="mqtt_port" value="1883">
+                </div>
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" name="mqtt_user" placeholder="Usuario MQTT">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="mqtt_password" placeholder="Password MQTT">
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>🤖 Telegram</h3>
+                <div class="form-group">
+                    <label>Bot Token</label>
+                    <input type="text" name="telegram_token" placeholder="1234567890:ABCdefGHIjkl" required>
+                </div>
+                <div class="form-group">
+                    <label>Chat ID</label>
+                    <input type="text" name="chat_id" placeholder="123456789" required>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>🌱 Configuración de cultivo</h3>
+                <div class="form-group">
+                    <label>Semana inicial</label>
+                    <select name="semana_inicial">
+                        <option value="1">Semana 1</option>
+                        <option value="2">Semana 2</option>
+                        <option value="3" selected>Semana 3</option>
+                        <option value="4">Semana 4</option>
+                        <option value="5">Semana 5</option>
+                        <option value="6">Semana 6</option>
+                        <option value="7">Semana 7</option>
+                        <option value="8">Semana 8</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Modo inicial</label>
+                    <select name="modo_inicial">
+                        <option value="floracion" selected>Floración (12/12)</option>
+                        <option value="vegetativo">Vegetativo (17/7)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit">💾 Guardar y Conectar</button>
+        </form>
+        
+        <div id="status" class="status"></div>
+        
+        <hr>
+        
+        <div class="footer-note">
+            Después de guardar, el sistema se reiniciará automáticamente.
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const statusDiv = document.getElementById('status');
+            
+            statusDiv.className = 'status';
+            statusDiv.textContent = '⏳ Guardando configuración...';
+            
+            try {
+                const response = await fetch('/save', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.text();
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ ' + result;
+                    setTimeout(() => { window.location.reload(); }, 3000);
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Error: ' + result;
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Error de conexión';
+            }
+        });
+    </script>
+</body>
+</html>
