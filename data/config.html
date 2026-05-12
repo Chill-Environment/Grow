@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grow Control - Configuración Avanzada</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#F4F6F9; display:flex; justify-content:center; align-items:center; min-height:100vh; padding:24px; }
+        .container { background:#FFFFFF; border-radius:16px; padding:32px; max-width:560px; width:100%; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #E8ECF4; }
+        h1 { font-size:24px; font-weight:600; text-align:center; margin-bottom:8px; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .subtitle { text-align:center; color:#6C757D; margin-bottom:32px; font-size:14px; }
+        .section { background:#F8FAFE; padding:20px; border-radius:12px; margin-bottom:24px; border:1px solid #E8ECF4; }
+        .section h3 { margin-top:0; margin-bottom:16px; color:#1A1A2E; font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; margin-bottom:8px; font-weight:500; font-size:13px; color:#1A1A2E; }
+        input, select { width:100%; padding:10px 12px; border:1px solid #E8ECF4; border-radius:8px; font-size:14px; background:#FFFFFF; }
+        input:focus, select:focus { outline:none; border-color:#0052CC; box-shadow:0 0 0 2px rgba(0,82,204,0.1); }
+        button { width:100%; padding:12px; background:#0052CC; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; margin-top:8px; }
+        button.danger { background:#E53935; }
+        .current-values { background:#F8FAFE; padding:12px; border-radius:8px; font-size:12px; margin-bottom:20px; border:1px solid #E8ECF4; }
+        hr { margin:24px 0 16px; border-top:1px solid #E8ECF4; }
+        .footer-link { text-align:center; margin-top:20px; }
+        .footer-link a { color:#0052CC; text-decoration:none; font-size:13px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🌱 Grow Control</h1>
+    <div class="subtitle">Configuración avanzada</div>
+    <div class="current-values">
+        📡 Configuración actual:<br>
+        WiFi: <strong>%SSID%</strong><br>
+        MQTT: <strong>%MQTT_SERVER%</strong><br>
+        Telegram: <strong>%TELEGRAM_STATUS%</strong>
+    </div>
+    <form id="configForm">
+        <div class="section"><h3>📡 WiFi</h3>
+            <div class="form-group"><label>SSID</label><input type="text" name="ssid" value="%SSID%" required></div>
+            <div class="form-group"><label>Contraseña</label><input type="password" name="pass" placeholder="Contraseña WiFi"><small>Dejar en blanco para mantener la actual</small></div>
+        </div>
+        <div class="section"><h3>📨 MQTT</h3>
+            <div class="form-group"><label>Servidor</label><input type="text" name="mqtt_server" value="%MQTT_SERVER%" required></div>
+            <div class="form-group"><label>Puerto</label><input type="text" name="mqtt_port" value="1883"></div>
+            <div class="form-group"><label>Usuario</label><input type="text" name="mqtt_user" value="%MQTT_USER%"></div>
+            <div class="form-group"><label>Contraseña</label><input type="password" name="mqtt_password" placeholder="Password MQTT"><small>Dejar en blanco para mantener la actual</small></div>
+        </div>
+        <div class="section"><h3>🤖 Telegram</h3>
+            <div class="form-group"><label>Bot Token</label><input type="text" name="telegram_token" value="%TELEGRAM_TOKEN%" required></div>
+            <div class="form-group"><label>Chat ID</label><input type="text" name="chat_id" value="%CHAT_ID%" required></div>
+        </div>
+        <div class="section"><h3>🌱 Cultivo</h3>
+            <div class="form-group"><label>Semana actual</label><select name="semana_inicial">
+                <option value="1" %SEL_SEMANA1%>Semana 1</option>
+                <option value="2" %SEL_SEMANA2%>Semana 2</option>
+                <option value="3" %SEL_SEMANA3%>Semana 3</option>
+                <option value="4" %SEL_SEMANA4%>Semana 4</option>
+                <option value="5" %SEL_SEMANA5%>Semana 5</option>
+                <option value="6" %SEL_SEMANA6%>Semana 6</option>
+                <option value="7" %SEL_SEMANA7%>Semana 7</option>
+                <option value="8" %SEL_SEMANA8%>Semana 8</option>
+            </select></div>
+            <div class="form-group"><label>Modo</label><select name="modo_inicial">
+                <option value="floracion" %SEL_FLOR%>Floración (12/12)</option>
+                <option value="vegetativo" %SEL_VEG%>Vegetativo (17/7)</option>
+            </select></div>
+        </div>
+        <button type="submit">💾 Guardar y Reiniciar</button>
+    </form>
+    <hr>
+    <button id="resetBtn" class="danger">⚠️ Reset de Fábrica</button>
+    <div class="footer-link"><a href="/">← Volver al Dashboard</a></div>
+</div>
+<script>
+    document.getElementById('configForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const response = await fetch('/saveconfig', { method: 'POST', body: formData });
+        const result = await response.text();
+        alert(result);
+        if(response.ok) setTimeout(()=>{ window.location.href='/'; }, 2000);
+    });
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+        if(confirm('¿Borrar toda la configuración?')) {
+            const response = await fetch('/resetconfig', { method: 'POST' });
+            alert(await response.text());
+            if(response.ok) setTimeout(()=>{ window.location.href='/'; }, 2000);
+        }
+    });
+</script>
+</body>
+</html>

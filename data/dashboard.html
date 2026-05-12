@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>Grow Control - Dashboard</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#F4F6F9;padding:24px;color:#1A1A2E;}
+        .container{max-width:1280px;margin:0 auto;}
+        .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px;}
+        .header h1{font-size:24px;font-weight:600;color:#1A1A2E;display:flex;align-items:center;gap:8px;}
+        .badge{background:#E8ECF4;padding:6px 14px;border-radius:20px;font-size:12px;color:#0052CC;font-family:monospace;}
+        .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-bottom:32px;}
+        .card{background:#FFFFFF;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid #E8ECF4;}
+        .card h3{font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:#6C757D;margin-bottom:12px;}
+        .card .value{font-size:36px;font-weight:700;color:#1A1A2E;}
+        .card .unit{font-size:14px;font-weight:400;color:#6C757D;margin-left:4px;}
+        .card .trend{font-size:12px;margin-top:8px;color:#6C757D;}
+        .panel-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:32px;}
+        .control-group{background:#FFFFFF;border-radius:16px;padding:20px;border:1px solid #E8ECF4;}
+        .control-group h3{font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+        .button-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:12px;}
+        .btn{display:inline-block;padding:10px 16px;border-radius:8px;text-decoration:none;text-align:center;font-weight:500;font-size:13px;transition:all 0.2s;border:none;cursor:pointer;}
+        .btn-primary{background:#0052CC;color:white;}
+        .btn-danger{background:#E53935;color:white;}
+        .btn-secondary{background:#E8ECF4;color:#1A1A2E;}
+        .btn-active{background:#00A86B;color:white;}
+        .badge-status{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;background:#F4F6F9;color:#1A1A2E;margin-top:12px;}
+        .badge-status.on{background:#00A86B;color:white;}
+        .badge-status.off{background:#E53935;color:white;}
+        .info-section{background:#FFFFFF;border-radius:16px;padding:20px;margin-top:24px;border:1px solid #E8ECF4;}
+        .historial{background:#FFFFFF;border-radius:16px;margin-top:32px;border:1px solid #E8ECF4;overflow:auto;}
+        table{width:100%;border-collapse:collapse;font-size:13px;}
+        th{text-align:left;padding:16px 20px;background:#F8FAFE;}
+        td{padding:12px 20px;border-bottom:1px solid #F0F2F5;}
+        .footer{text-align:center;margin-top:32px;font-size:12px;color:#6C757D;}
+    </style>
+</head>
+<body>
+<div class='container'>
+    <div class='header'>
+        <h1>🌱 Grow Control</h1>
+        <div class='badge'>📡 %IP%</div>
+    </div>
+    <div class='dashboard'>
+        <div class='card'><h3>🌡️ Temperatura</h3><div class='value'>%TEMP%<span class='unit'>°C</span></div><div class='trend'>%TENDENCIA_TEMP%</div></div>
+        <div class='card'><h3>💧 Humedad</h3><div class='value'>%HUM%<span class='unit'>%</span></div><div class='trend'>Óptimo: %OPTIMO_HUM%</div></div>
+        <div class='card'><h3>🌍 Suelo</h3><div class='value'>%SUELO%<span class='unit'>%</span></div><div class='trend'>Riego &lt; %RIEGO%</div></div>
+        <div class='card'><h3>📊 VPD</h3><div class='value'>%VPD%<span class='unit'>kPa</span></div><div class='trend'>Objetivo: %VPD_OBJ% kPa</div></div>
+    </div>
+    <div class='panel-controls'>
+        <div class='control-group'><h3>💧 Riego</h3><div class='button-group'><a href='/riego' class='btn btn-primary'>🚿 Riego Manual</a></div></div>
+        <div class='control-group'><h3>💡 Luces</h3>
+            <div class='button-group'><a href='/lucesManual?estado=on' class='btn btn-primary'>💡 Encender (1h)</a><a href='/lucesManual?estado=off' class='btn btn-danger'>🌙 Apagar (1h)</a></div>
+            <div class='button-group'><a href='/luces?modo=flor' class='btn %FLOR_ACTIVE%'>🌙 Floración</a><a href='/luces?modo=veg' class='btn %VEG_ACTIVE%'>☀️ Vegetativo</a></div>
+        </div>
+        <div class='control-group'><h3>🌀 Extractor</h3>
+            <div class='button-group'><a href='/manualExtractor?estado=on' class='btn btn-primary'>🔧 ON</a><a href='/manualExtractor?estado=off' class='btn btn-secondary'>🔧 OFF</a><a href='/modoExtractor?modo=1' class='btn btn-secondary'>⏱️ Intermitente</a><a href='/modoExtractor?modo=2' class='btn btn-secondary'>🤖 Automático</a></div>
+            <div class='badge-status %EXTRACTOR_CLASE%'>Estado: %EXTRACTOR_ESTADO% | Modo: %MODO_EXTRACTOR%</div>
+        </div>
+        <div class='control-group'><h3>🌬️ Intractor</h3>
+            <div class='button-group'><a href='/manualIntractor?estado=on' class='btn btn-primary'>🔧 ON</a><a href='/manualIntractor?estado=off' class='btn btn-secondary'>🔧 OFF</a><a href='/modoIntractor?modo=1' class='btn btn-secondary'>⏱️ Intermitente</a><a href='/modoIntractor?modo=2' class='btn btn-secondary'>🤖 Automático</a></div>
+            <div class='badge-status %INTRACTOR_CLASE%'>Estado: %INTRACTOR_ESTADO% | Modo: %MODO_INTRACTOR%</div>
+        </div>
+    </div>
+    <div class='info-section'>
+        <h3>📊 Resumen del Cultivo</h3>
+        <div class='config-row'><span>Presión atmosférica:</span><strong>%PRES% hPa | %INTERPRETACION%</strong></div>
+        <div class='config-row'><span>Semana de cultivo:</span><strong>%SEMANA% (%CICLO_LUCES%)</strong></div>
+        <div class='config-row'><span>VPD objetivo:</span><strong>%VPD_OBJ% kPa</strong></div>
+        <div class='separator'></div>
+        <form action='/setSemana' method='get' style='display:flex;align-items:center;gap:12px;flex-wrap:wrap;'>
+            <label>Cambiar semana:</label>
+            <input type='number' name='semana' min='1' max='8' value='%SEMANA%' class='semana-input'>
+            <input type='submit' value='Actualizar' class='btn btn-primary'>
+            <a href='/config' class='btn btn-secondary'>⚙️ Configuración avanzada</a>
+            <a href='/' class='btn btn-secondary'>🔄 Refrescar</a>
+        </form>
+    </div>
+    <div class='historial'>
+        <h3>📜 Historial de lecturas</h3>
+        %HISTORIAL%
+    </div>
+    <div class='footer'>Grow Control v2.0 | %IP%</div>
+</div>
+<script>setTimeout(()=>{location.reload()},30000);</script>
+</body>
+</html>
