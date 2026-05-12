@@ -81,6 +81,24 @@ void initWebServer() {
     handleResetConfig(request);
   });
 
+  // ========== NUEVO: página OTA manual ==========
+  server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String html = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head><title>OTA Update</title></head>
+<body>
+  <h2>Actualizar Firmware</h2>
+  <form method="POST" action="/update" enctype="multipart/form-data">
+    <input type="file" name="firmware" accept=".bin"><br>
+    <input type="submit" value="Subir y Actualizar">
+  </form>
+</body>
+</html>
+)rawliteral";
+    request->send(200, "text/html", html);
+  });
+
   AsyncOTA.begin(&server);
   server.begin();
 }
