@@ -297,6 +297,4 @@ void handleResetConfig(AsyncWebServerRequest *request) {
   request->send(200, "text/plain", "Configuración borrada. Reiniciando...");
   delay(1000);
   ESP.restart();
-} 
-
-//
+}
