@@ -132,12 +132,14 @@ void handleModoExtractor(AsyncWebServerRequest *request) {
 void handleManualExtractor(AsyncWebServerRequest *request) {
   if (request->hasArg("estado")) {
     bool encender = (request->arg("estado") == "on");
-    // Enciende o apaga el relé
+    Serial.printf("🔧 ManualExtractor: estado=%s\n", encender ? "ON" : "OFF");
     controlarSonoff(SONOFF3_TOPIC, encender);
-    // Cambia a modo manual (0) para que la lógica automática no interfiera
+    Serial.printf("   modoExtractor antes=%d\n", modoExtractor);
     modoExtractor = 0;
-    // Guarda el estado en Preferences
+    Serial.printf("   modoExtractor después=%d\n", modoExtractor);
     guardarEstado();
+  } else {
+    Serial.println("⚠️ ManualExtractor: no hay argumento 'estado'");
   }
   request->redirect("/");
 }
