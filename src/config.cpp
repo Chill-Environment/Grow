@@ -73,6 +73,29 @@ float maxTemp = 0, minTemp = 100, maxHA = 0, minHA = 100, maxPresion = 0, minPre
 Lectura historial[MAX_HISTORIAL];
 int historialIndex = 0, historialCount = 0;
 
+// ========== FUNCIONES DE ESTADO (con logs) ==========
+void guardarEstado() {
+  Preferences prefs;
+  prefs.begin("grow", false);
+  prefs.putInt("semanaCultivo", semanaCultivo);
+  prefs.putInt("modoExtractor", modoExtractor);
+  prefs.putInt("modoIntractor", modoIntractor);
+  prefs.putBool("modoFloracion", modoFloracion);
+  prefs.end();
+  Serial.printf("💾 Estado guardado: modoExtractor=%d\n", modoExtractor);
+}
+
+void cargarEstado() {
+  Preferences prefs;
+  prefs.begin("grow", true);
+  semanaCultivo = prefs.getInt("semanaCultivo", config_semana_inicial);
+  modoExtractor = prefs.getInt("modoExtractor", 0);
+  modoIntractor = prefs.getInt("modoIntractor", 0);
+  modoFloracion = prefs.getBool("modoFloracion", config_modo_floracion);
+  prefs.end();
+  Serial.printf("📦 Estado cargado: modoExtractor=%d\n", modoExtractor);
+}
+
 // ========== FUNCIONES SPIFFS / CONFIGURACIÓN ==========
 void cargarConfiguracion() {
   if (!SPIFFS.begin(true)) {
@@ -126,24 +149,4 @@ void guardarConfiguracion() {
   file.println("semana_inicial=" + String(config_semana_inicial));
   file.println("modo_inicial=" + String(config_modo_floracion ? "floracion" : "vegetativo"));
   file.close();
-}
-
-void guardarEstado() {
-  Preferences prefs;
-  prefs.begin("grow", false);
-  prefs.putInt("semanaCultivo", semanaCultivo);
-  prefs.putInt("modoExtractor", modoExtractor);
-  prefs.putInt("modoIntractor", modoIntractor);
-  prefs.putBool("modoFloracion", modoFloracion);
-  prefs.end();
-}
-
-void cargarEstado() {
-  Preferences prefs;
-  prefs.begin("grow", true);
-  semanaCultivo = prefs.getInt("semanaCultivo", config_semana_inicial);
-  modoExtractor = prefs.getInt("modoExtractor", 0);
-  modoIntractor = prefs.getInt("modoIntractor", 0);
-  modoFloracion = prefs.getBool("modoFloracion", config_modo_floracion);
-  prefs.end();
 }
