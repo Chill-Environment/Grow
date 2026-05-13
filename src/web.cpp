@@ -91,9 +91,6 @@ void initWebServer() {
   server.begin();
 }
 
-// Las funciones handleRiegoManual, handleModoLuces, handleLucesManual, etc.
-// se mantienen exactamente igual que antes (sin cambios)
-
 void handleRiegoManual(AsyncWebServerRequest *request) {
   if (!riegoEnProgreso) {
     controlarSonoff(SONOFF1_TOPIC, true);
@@ -126,13 +123,21 @@ void handleModoExtractor(AsyncWebServerRequest *request) {
   if (request->hasArg("modo")) {
     modoExtractor = request->arg("modo").toInt();
     guardarEstado();
+    // Forzar una actualización inmediata del estado del extractor
+    controlExtractor();
   }
   request->redirect("/");
 }
 
 void handleManualExtractor(AsyncWebServerRequest *request) {
   if (request->hasArg("estado")) {
-    controlarSonoff(SONOFF3_TOPIC, request->arg("estado") == "on");
+    bool encender = (request->arg("estado") == "on");
+    // Enciende o apaga el relé
+    controlarSonoff(SONOFF3_TOPIC, encender);
+    // Cambia a modo manual (0) para que la lógica automática no interfiera
+    modoExtractor = 0;
+    // Guarda el estado en Preferences
+    guardarEstado();
   }
   request->redirect("/");
 }
