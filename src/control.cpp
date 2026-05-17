@@ -92,6 +92,7 @@ void enviarReporteDiario() {
     float avgPresion = sumPresion / readingsCount;
     String mensaje = "📊 *RESUMEN DIARIO*\n\n🌡️ Temp: " + String(avgTemp,1) + "°C\n💧 Humedad: " + String(avgHA,1) + "%\n🌍 Suelo: " + String(avgSuelo,1) + "%\n📊 VPD: " + String(avgVPD,2) + " kPa\n🌬️ Presión: " + String(avgPresion,1) + " hPa\n📆 Semana: " + String(semanaCultivo);
     enviarTelegram(mensaje);
+    Serial.println("✅ Resumen diario enviado");
     
     dailyReportSent = true;
 

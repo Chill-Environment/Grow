@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grow Control - Logs</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; margin: 0; }
+        h2 { color: #00A86B; margin-top: 0; }
+        #logs { 
+            background: #0a0a0a; 
+            border: 1px solid #333; 
+            height: calc(100vh - 100px); 
+            overflow-y: auto; 
+            padding: 10px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+        .log-line { 
+            border-bottom: 1px solid #333; 
+            padding: 4px 8px;
+            font-family: 'Courier New', monospace;
+        }
+        .log-time { color: #888; margin-right: 10px; }
+        .clear-btn {
+            background: #E53935;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .clear-btn:hover { opacity: 0.85; }
+    </style>
+</head>
+<body>
+    <h2>📡 Logs en tiempo real - Grow Control</h2>
+    <button class="clear-btn" onclick="clearLogs()">🗑️ Limpiar logs</button>
+    <div id="logs"></div>
+    <script>
+        const logsDiv = document.getElementById('logs');
+        const source = new EventSource('/logs');
+        
+        source.addEventListener('log', function(e) {
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            const time = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="log-time">[${time}]</span> ${e.data}`;
+            logsDiv.appendChild(line);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        });
+        
+        source.onerror = function(e) {
+            console.error('Error de conexión SSE', e);
+        };
+        
+        function clearLogs() {
+            logsDiv.innerHTML = '';
+        }
+    </script>
+</body>
+</html>

@@ -8,11 +8,19 @@
 
 void initSensors() {
   Wire.begin(I2C_SDA, I2C_SCL);
-  if (!aht.begin()) Serial.println(F("❌ Error: No se encontró AHT20"));
-  else Serial.println(F("✅ AHT20 inicializado"));
+  if (!aht.begin()) {
+    Serial.println(F("❌ Error: No se encontró AHT20"));
+  }
+  else {
+    Serial.println(F("✅ AHT20 inicializado"));
+  }
   if (!bmp.begin(0x76)) {
-    if (!bmp.begin(0x77)) Serial.println(F("❌ Error: No se encontró BMP280"));
-    else Serial.println(F("✅ BMP280 inicializado (0x77)"));
+    if (!bmp.begin(0x77)) {
+      Serial.println(F("❌ Error: No se encontró BMP280"));
+    }
+    else {
+      Serial.println(F("✅ BMP280 inicializado (0x77)"));
+    }
   } else {
     Serial.println(F("✅ BMP280 inicializado (0x76)"));
   }

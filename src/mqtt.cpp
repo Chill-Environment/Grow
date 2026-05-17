@@ -7,6 +7,9 @@
 #include "telegram.h"
 #include "historial.h"
 
+// Declaración extern de la función logToWeb (definida en web.cpp)
+extern void logToWeb(const char* format, ...);
+
 void initMQTT() {
   mqttClient.setServer(config_mqtt_server.c_str(), config_mqtt_port);
   mqttClient.setCallback(mqttCallback);
@@ -17,6 +20,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   for (unsigned int i = 0; i < length; i++) message += (char)payload[i];
   String topicStr = String(topic);
   Serial.printf("📨 MQTT Recibido: %s -> %s\n", topic, message.c_str());
+  logToWeb("📨 MQTT Recibido: %s -> %s\n", topic, message.c_str());
 
   if (topicStr == SONOFF1_STAT) {
     bombaEstado = (message == "ON");

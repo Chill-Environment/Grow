@@ -2,19 +2,34 @@
 #include <ESPAsyncWebServer.h>
 #include <AsyncOTA.h>
 #include <SPIFFS.h>
+#include <stdarg.h>
 #include "web.h"
 #include "config.h"
 #include "sensors.h"
 #include "mqtt.h"
 #include "control.h"
 #include "historial.h"
-#include <WebSerial.h>
 
 extern AsyncWebServer server;
+
+AsyncEventSource events("/logs");
 
 void initWebServer() {
   if (adminUser.length() == 0) adminUser = "admin";
   if (adminPass.length() == 0) adminPass = "adminfumon";
+
+  // Configurar evento source para logs en tiempo real
+  events.onConnect([](AsyncEventSourceClient *client) {
+    Serial.println("📡 Cliente conectado a logs");
+    client->send("=== Logs de Grow Control conectados ===", "log", millis());
+    client->send("✅ Sistema listo. Los eventos aparecerán aquí.", "log", millis());
+});
+  server.addHandler(&events);
+
+  // Servir la página de logs
+  server.on("/logs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/logs.html", "text/html");
+  });
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (!request->authenticate(adminUser.c_str(), adminPass.c_str()))
@@ -88,21 +103,24 @@ void initWebServer() {
     handleResetConfig(request);
   });
 
-  // Inicializa WebSerial 
-  WebSerial.begin(&server);
-
-  // Redirigir Serial a WebSerial (opcional)
-WebSerial.println("=== WebSerial iniciado ===");
-// Nota: No hay una forma automática, tendrías que modificar todas las llamadas
-
-  WebSerial.msgCallback([](uint8_t *data, size_t len) {
-    WebSerial.println("Comando recibido desde web: " + String((char*)data));
-
-  });
-
   AsyncOTA.begin(&server);
   server.begin();
 
+}
+
+// Función para enviar logs a todos los clientes conectados
+void logToWeb(const char* format, ...) {
+  char buffer[512];
+  va_list args;
+  va_start(args, format);
+  vsnprintf(buffer, sizeof(buffer), format, args);
+  va_end(args);
+  
+  // Enviar a Serial USB
+  Serial.print(buffer);
+  
+  // Enviar a todos los clientes conectados a /events
+  events.send(buffer, "log", millis());
 }
 
 void handleRiegoManual(AsyncWebServerRequest *request) {
@@ -146,14 +164,14 @@ void handleModoExtractor(AsyncWebServerRequest *request) {
 void handleManualExtractor(AsyncWebServerRequest *request) {
   if (request->hasArg("estado")) {
     bool encender = (request->arg("estado") == "on");
-    Serial.printf("🔧 ManualExtractor: estado=%s\n", encender ? "ON" : "OFF");
+    logToWeb("🔧 ManualExtractor: estado=%s\n", encender ? "ON" : "OFF");
     controlarSonoff(SONOFF3_TOPIC, encender);
-    Serial.printf("   modoExtractor antes=%d\n", modoExtractor);
+    logToWeb("   modoExtractor antes=%d\n", modoExtractor);
     modoExtractor = 0;
-    Serial.printf("   modoExtractor después=%d\n", modoExtractor);
+    logToWeb("   modoExtractor después=%d\n", modoExtractor);
     guardarEstado();
   } else {
-    Serial.println("⚠️ ManualExtractor: no hay argumento 'estado'");
+    logToWeb("⚠️ ManualExtractor: no hay argumento 'estado'\n");
   }
   request->redirect("/");
 }

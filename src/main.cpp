@@ -36,17 +36,26 @@ void setup() {
   Serial.begin(115200);
 
    // ========== DIAGNÓSTICO DE REINICIOS ==========
-  esp_reset_reason_t reason = esp_reset_reason();
-  Serial.printf("Motivo del último reinicio: %d\n", reason);
-  if (reason == ESP_RST_WDT) Serial.println("→ Reinicio por watchdog");
-  else if (reason == ESP_RST_BROWNOUT) Serial.println("→ Reinicio por brownout (baja tensión)");
-  else if (reason == ESP_RST_POWERON) Serial.println("→ Reinicio por encendido normal");
-  else if (reason == ESP_RST_SW) Serial.println("→ Reinicio por software (ESP.restart())");
+  
+esp_reset_reason_t reason = esp_reset_reason();
+Serial.printf("Motivo del último reinicio: %d\n", reason);
+if (reason == ESP_RST_WDT) {
+  Serial.println("→ Reinicio por watchdog");  
+}
+else if (reason == ESP_RST_BROWNOUT) {
+  Serial.println("→ Reinicio por brownout (baja tensión)");  
+}
+else if (reason == ESP_RST_POWERON) {
+  Serial.println("→ Reinicio por encendido normal");
+}
+else if (reason == ESP_RST_SW) {
+  Serial.println("→ Reinicio por software (ESP.restart())"); 
+}
   // ============================================================
 
-  esp_task_wdt_init(120, true);
+  esp_task_wdt_init(300, true);
   esp_task_wdt_add(NULL);
-  Serial.println(F("✅ Watchdog Timer iniciado (120 segundos)"));
+  Serial.println(F("✅ Watchdog Timer iniciado (300 segundos)"));
 
   cargarConfiguracion();
   if (adminUser.length() == 0) adminUser = "admin";
