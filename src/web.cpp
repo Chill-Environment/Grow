@@ -8,6 +8,7 @@
 #include "mqtt.h"
 #include "control.h"
 #include "historial.h"
+#include <WebSerial.h>
 
 extern AsyncWebServer server;
 
@@ -87,8 +88,21 @@ void initWebServer() {
     handleResetConfig(request);
   });
 
+  // Inicializa WebSerial 
+  WebSerial.begin(&server);
+
+  // Redirigir Serial a WebSerial (opcional)
+WebSerial.println("=== WebSerial iniciado ===");
+// Nota: No hay una forma automática, tendrías que modificar todas las llamadas
+
+  WebSerial.msgCallback([](uint8_t *data, size_t len) {
+    WebSerial.println("Comando recibido desde web: " + String((char*)data));
+
+  });
+
   AsyncOTA.begin(&server);
   server.begin();
+
 }
 
 void handleRiegoManual(AsyncWebServerRequest *request) {

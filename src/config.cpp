@@ -1,152 +1,185 @@
 #include <Arduino.h>
-#include <SPIFFS.h>
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <WiFiClientSecure.h>
 #include <Preferences.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_AHTX0.h>
+#include <ArduinoOTA.h>
+#include <esp_task_wdt.h>
+#include <time.h>
+#include <AsyncOTA.h>
+
 #include "config.h"
+#include "sensors.h"
+#include "mqtt.h"
+#include "telegram.h"
+#include "web.h"
+#include "control.h"
+#include "historial.h"
+#include "utils.h"
 
-// ========== CONSTANTES ==========
-const int soilPins[4] = {32, 33, 34, 35};
-const int dryValue = 2700;
-const int wetValue = 1200;
-const int sueloMinRiego = 35;
-const int humAireMin = 60;
-const int tempMin = 20;
-const int sueloMinAlerta = 35;
-const unsigned long cooldownRiegoMs = 86400000;
-const unsigned long riegoDuration = 10000;
-const unsigned long lucesManualDuration = 3600000;
+// ========== OBJETOS GLOBALES (definiciones) ==========
+AsyncWebServer server(80);
+Adafruit_BMP280 bmp;
+Adafruit_AHTX0 aht;
+WiFiClientSecure secured_client;
+Preferences prefs;
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);
 
-// ========== VARIABLES DE CONFIGURACIÓN ==========
-String config_ssid = "";
-String config_password = "";
-String config_mqtt_server = "";
-int config_mqtt_port = 1883;
-String config_mqtt_user = "";
-String config_mqtt_password = "";
-String config_telegram_token = "";
-String config_chat_id = "";
-int config_semana_inicial = 1;
-bool config_modo_floracion = false;
-String adminUser = "";
-String adminPass = "";
+// ========== VARIABLES DE ESTADO ==========
+bool configuracionCompleta = false;
+bool primeraVez = true;
 
-// ========== VARIABLES GLOBALES ==========
-int semanaCultivo = 1;
-bool modoFloracion = true;
-bool lucesManualMode = false;
-bool lucesManualState = false;
-unsigned long lucesManualTimeout = 0;
-int modoExtractor = 0;
-int modoIntractor = 0;
-bool extractorEstado = false;
-bool intractorEstado = false;
-bool bombaEstado = false;
-bool luzEstado = false;
-unsigned long lastRiegoTime = 0;
-bool riegoEnProgreso = false;
-unsigned long lastRiegoStart = 0;
+void setup() {
+  Serial.begin(115200);
 
-unsigned long lastSensorRead = 0;
-unsigned long lastTelegramCheck = 0;
-unsigned long lastDailyReport = 0;
-bool dailyReportSent = false;
-unsigned long lastLightsCheck = 0;
-unsigned long lastLuzPublish = 0;
-unsigned long lastExtractorPublish = 0;
-const unsigned long PUBLISH_COOLDOWN = 2000;
+   // ========== DIAGNÓSTICO DE REINICIOS ==========
+  esp_reset_reason_t reason = esp_reset_reason();
+  Serial.printf("Motivo del último reinicio: %d\n", reason);
+  if (reason == ESP_RST_WDT) Serial.println("→ Reinicio por watchdog");
+  else if (reason == ESP_RST_BROWNOUT) Serial.println("→ Reinicio por brownout (baja tensión)");
+  else if (reason == ESP_RST_POWERON) Serial.println("→ Reinicio por encendido normal");
+  else if (reason == ESP_RST_SW) Serial.println("→ Reinicio por software (ESP.restart())");
+  // ============================================================
 
-float ultimaTempValida = 0, ultimaHumedadValida = 0;
-bool hayDatosValidos = false;
-int desconexionesMQTT = 0;
-int fallosRiego = 0, fallosLuces = 0, fallosExtractor = 0;
+  esp_task_wdt_init(120, true);
+  esp_task_wdt_add(NULL);
+  Serial.println(F("✅ Watchdog Timer iniciado (120 segundos)"));
 
-const int TENDENCIA_LECTURAS = 24;
-float tempHistory[24];
-float humHistory[24];
-float vpdHistory[24];
-float presionHistory[24];
-int historyIndex = 0, historyCount = 0;
+  cargarConfiguracion();
+  if (adminUser.length() == 0) adminUser = "admin";
+  if (adminPass.length() == 0) adminPass = "adminfumon";
 
-float sumTemp = 0, sumHA = 0, sumSuelo = 0, sumVPD = 0, sumPresion = 0;
-int readingsCount = 0;
-float maxTemp = 0, minTemp = 100, maxHA = 0, minHA = 100, maxPresion = 0, minPresion = 1000;
+  if (config_ssid.length() > 0 && config_telegram_token.length() > 0) {
+    configuracionCompleta = true;
+    if (conectarWiFi()) {
+      initSensors();
+      initMQTT();
+      initTelegram();
 
-Lectura historial[MAX_HISTORIAL];
-int historialIndex = 0, historialCount = 0;
+      configTime(-10800, 0, "pool.ntp.org", "time.nist.gov");
+      delay(2000);
+      esp_task_wdt_reset();
 
-// ========== FUNCIONES DE ESTADO (con logs) ==========
-void guardarEstado() {
-  Preferences prefs;
-  prefs.begin("grow", false);
-  prefs.putInt("semanaCultivo", semanaCultivo);
-  prefs.putInt("modoExtractor", modoExtractor);
-  prefs.putInt("modoIntractor", modoIntractor);
-  prefs.putBool("modoFloracion", modoFloracion);
-  prefs.end();
-  Serial.printf("💾 Estado guardado: modoExtractor=%d\n", modoExtractor);
+      enviarTelegram("🌱 *GROW CONTROL INICIADO*\n✅ Semana: " + String(semanaCultivo));
+
+      initWebServer();
+
+      for (int i = 0; i < MAX_HISTORIAL; i++) strcpy(historial[i].tiempo, "");
+      for (int i = 0; i < TENDENCIA_LECTURAS; i++) {
+        tempHistory[i] = 0; humHistory[i] = 0; vpdHistory[i] = 0; presionHistory[i] = 0;
+      }
+      cargarEstado();
+
+      ArduinoOTA.setHostname("GrowControl");
+      ArduinoOTA.begin();
+      Serial.println("✅ OTA nativo iniciado");
+
+      lastDailyReport = millis();
+    } else {
+      iniciarModoAP();
+      setupConfigServer();
+    }
+  } else {
+    iniciarModoAP();
+    setupConfigServer();
+  }
 }
 
-void cargarEstado() {
-  Preferences prefs;
-  prefs.begin("grow", true);
-  semanaCultivo = prefs.getInt("semanaCultivo", config_semana_inicial);
-  modoExtractor = prefs.getInt("modoExtractor", 0);
-  modoIntractor = prefs.getInt("modoIntractor", 0);
-  modoFloracion = prefs.getBool("modoFloracion", config_modo_floracion);
-  prefs.end();
-  Serial.printf("📦 Estado cargado: modoExtractor=%d\n", modoExtractor);
-}
+void loop() {
 
-// ========== FUNCIONES SPIFFS / CONFIGURACIÓN ==========
-void cargarConfiguracion() {
-  if (!SPIFFS.begin(true)) {
-    Serial.println(F("Error al montar SPIFFS"));
+  ArduinoOTA.handle();
+
+  if (WiFi.getMode() == WIFI_AP) {
+    delay(100);
     return;
   }
-  File file = SPIFFS.open("/config.txt", "r");
-  if (!file) {
-    Serial.println(F("No hay configuración guardada. Usando modo AP"));
-    return;
+
+  if (!configuracionCompleta) return;
+
+  if (!mqttClient.connected()) reconnectMQTT();
+  mqttClient.loop();
+
+  static unsigned long lastStateCheck = 0;
+  if (millis() - lastStateCheck > 30000) {
+    lastStateCheck = millis();
+    verificarEstadosReales();
   }
-  while (file.available()) {
-    String line = file.readStringUntil('\n');
-    line.trim();
-    int sep = line.indexOf('=');
-    if (sep > 0) {
-      String key = line.substring(0, sep);
-      String value = line.substring(sep + 1);
-      if (key == "ssid") config_ssid = value;
-      else if (key == "password") config_password = value;
-      else if (key == "mqtt_server") config_mqtt_server = value;
-      else if (key == "mqtt_port") config_mqtt_port = value.toInt();
-      else if (key == "mqtt_user") config_mqtt_user = value;
-      else if (key == "mqtt_password") config_mqtt_password = value;
-      else if (key == "telegram_token") config_telegram_token = value;
-      else if (key == "chat_id") config_chat_id = value;
-      else if (key == "semana_inicial") config_semana_inicial = value.toInt();
-      else if (key == "modo_inicial") config_modo_floracion = (value == "floracion");
-      else if (key == "admin_user") adminUser = value;
-      else if (key == "admin_pass") adminPass = value;
+
+  if (primeraVez && mqttClient.connected()) {
+    inicializarEstados();
+    primeraVez = false;
+  }
+
+  if (millis() - lastSensorRead >= 30000) {
+    lastSensorRead = millis();
+    time_t now;
+    time(&now);
+    char timeStr[20];
+    strftime(timeStr, sizeof(timeStr), "%d/%m/%Y %H:%M", localtime(&now));
+
+    float temp, hum, pres, vpd, suelo;
+    if (readTempHumi(temp, hum)) {
+      ultimaTempValida = temp;
+      ultimaHumedadValida = hum;
+      hayDatosValidos = true;
+    } else if (hayDatosValidos) {
+      temp = ultimaTempValida;
+      hum = ultimaHumedadValida;
+    } else {
+      return;
+    }
+    pres = readPressure();
+    vpd = computeVPD(temp, hum);
+    suelo = readSoilMoisture();
+
+    agregarHistorialTendencia(temp, hum, vpd, pres);
+    sumTemp += temp; sumHA += hum; sumSuelo += suelo; sumVPD += vpd; sumPresion += pres;
+    readingsCount++;
+
+    agregarAlHistorial(timeStr, temp, hum, suelo, vpd, pres);
+
+    if (mqttClient.connected()) {
+      String payload = "grow_sensors,host=ESP32_grow temp=" + String(temp,1) +
+                       ",humedad=" + String(hum,1) + ",presion=" + String(pres,1) +
+                       ",vpd=" + String(vpd,2) + ",suelo=" + String(suelo,1);
+      mqttClient.publish("grow/sensor", payload.c_str());
+    }
+
+    // Riego automático
+    int ajuste = getRecomendacionRiegoPresion(pres);
+    int umbral = sueloMinRiego + ajuste;
+    if (umbral < 20) umbral = 20;
+    if (suelo < umbral && hum < humAireMin && temp > tempMin && !riegoEnProgreso &&
+        (millis() - lastRiegoTime > cooldownRiegoMs || lastRiegoTime == 0)) {
+      controlarSonoff(SONOFF1_TOPIC, true);
+      riegoEnProgreso = true;
+      lastRiegoStart = millis();
+      lastRiegoTime = millis();
+      enviarTelegram("💧 *Riego automático*");
+    }
+    if (suelo < sueloMinAlerta) {
+      enviarTelegram("🚨 *ALERTA: Suelo seco!* " + String(suelo,1) + "%");
     }
   }
-  file.close();
-  if (config_ssid.length() > 0 && config_telegram_token.length() > 0) {
-    semanaCultivo = config_semana_inicial;
-    modoFloracion = config_modo_floracion;
-  }
-}
 
-void guardarConfiguracion() {
-  File file = SPIFFS.open("/config.txt", "w");
-  if (!file) return;
-  file.println("ssid=" + config_ssid);
-  file.println("password=" + config_password);
-  file.println("mqtt_server=" + config_mqtt_server);
-  file.println("mqtt_port=" + String(config_mqtt_port));
-  file.println("mqtt_user=" + config_mqtt_user);
-  file.println("mqtt_password=" + config_mqtt_password);
-  file.println("telegram_token=" + config_telegram_token);
-  file.println("chat_id=" + config_chat_id);
-  file.println("semana_inicial=" + String(config_semana_inicial));
-  file.println("modo_inicial=" + String(config_modo_floracion ? "floracion" : "vegetativo"));
-  file.close();
+  controlLuces();
+  controlExtractor();
+  enviarReporteDiario();
+  handleTelegramMessages();
+
+  if (riegoEnProgreso && (millis() - lastRiegoStart >= riegoDuration)) {
+    controlarSonoff(SONOFF1_TOPIC, false);
+    riegoEnProgreso = false;
+  }
+
+  static unsigned long lastWiFiCheck = 0;
+  if (millis() - lastWiFiCheck > 30000 && WiFi.status() != WL_CONNECTED) {
+    lastWiFiCheck = millis();
+    WiFi.reconnect();
+  }
+
+  esp_task_wdt_reset();
 }

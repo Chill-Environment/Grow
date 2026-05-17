@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <time.h>
+#include <Preferences.h>
 #include "control.h"
 #include "config.h"
 #include "sensors.h"
@@ -69,7 +70,21 @@ void enviarReporteDiario() {
   time_t now;
   time(&now);
   struct tm *tm = localtime(&now);
-  if (tm->tm_hour == 20 && !dailyReportSent && readingsCount >= 10) {
+
+  // Construir string con la fecha actual (año-mes-día)
+  String today = String(tm->tm_year + 1900) + "-" + String(tm->tm_mon + 1) + "-" + String(tm->tm_mday);
+  
+  // Leer la última fecha de envío guardada en Preferences (sin generar error si no existe)
+  Preferences prefs;
+  prefs.begin("grow", true);
+  String lastReportDate = "";
+  if (prefs.isKey("lastReportDate")) {
+    lastReportDate = prefs.getString("lastReportDate", "");
+  }
+  prefs.end();
+
+  // Condición: son las 20:00, no se ha enviado hoy, hay suficientes lecturas, y no se ha enviado ya hoy
+  if (tm->tm_hour == 20 && !dailyReportSent && readingsCount >= 10 && lastReportDate != today) {
     float avgTemp = sumTemp / readingsCount;
     float avgHA = sumHA / readingsCount;
     float avgSuelo = sumSuelo / readingsCount;
@@ -77,13 +92,22 @@ void enviarReporteDiario() {
     float avgPresion = sumPresion / readingsCount;
     String mensaje = "📊 *RESUMEN DIARIO*\n\n🌡️ Temp: " + String(avgTemp,1) + "°C\n💧 Humedad: " + String(avgHA,1) + "%\n🌍 Suelo: " + String(avgSuelo,1) + "%\n📊 VPD: " + String(avgVPD,2) + " kPa\n🌬️ Presión: " + String(avgPresion,1) + " hPa\n📆 Semana: " + String(semanaCultivo);
     enviarTelegram(mensaje);
+    
     dailyReportSent = true;
+
+    // Guardar la fecha de hoy en Preferences para evitar duplicados
+    prefs.begin("grow", false);
+    prefs.putString("lastReportDate", today);
+    prefs.end();
+    
     sumTemp = sumHA = sumSuelo = sumVPD = sumPresion = 0;
     readingsCount = 0;
     maxTemp = 0; minTemp = 100;
     maxHA = 0; minHA = 100;
     maxPresion = 0; minPresion = 1000;
   }
+  
+  // Reiniciar el flag si no son las 20:00
   if (tm->tm_hour != 20) dailyReportSent = false;
 }
 
