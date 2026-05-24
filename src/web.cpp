@@ -272,7 +272,7 @@ void handleRoot(AsyncWebServerRequest *request) {
     String interpretacion = interpretarPresion(pres);
     String modoExtractorStr = (modoExtractor == 0) ? "Manual" : ((modoExtractor == 1) ? "Intermitente" : "Automático");
     String modoIntractorStr = (modoIntractor == 0) ? "Manual" : ((modoIntractor == 1) ? "Intermitente" : "Automático");
-    String cicloLucesStr = modoFloracion ? "Floración 12/12" : "Vegetativo 17/7";
+    String cicloLucesStr = modoFloracion ? "Floración 12/12" : "Vegetativo 18/6";
 
     // Reemplazar marcadores
     html.replace("%IP%", WiFi.localIP().toString());

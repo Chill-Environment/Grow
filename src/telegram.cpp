@@ -81,7 +81,7 @@ void handleTelegramMessages() {
       else if (text == "/vegetativo") {
         modoFloracion = false;
         guardarEstado();
-        bot->sendMessage(chat_id, "☀️ *Vegetativo 17/7*", "Markdown");
+        bot->sendMessage(chat_id, "☀️ *Vegetativo 18/6*", "Markdown");
       }
       else if (text == "/extractor_auto") {
         modoExtractor = 2;
