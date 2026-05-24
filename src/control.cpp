@@ -30,7 +30,7 @@ void controlLuces() {
     time_t now;
     time(&now);
     int hora = localtime(&now)->tm_hour;
-    lucesOn = (modoFloracion) ? (hora >= 6 && hora < 18) : (hora >= 1 && hora < 18);
+    lucesOn = (modoFloracion) ? (hora >= 6 && hora < 18) : (hora >= 00 && hora < 18);
   }
   if (lucesOn != luzEstado) {
     if (millis() - lastLuzPublish > PUBLISH_COOLDOWN) {
