@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover'>
+    <title>Grow Control - Dashboard </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ================= DARK THEME ================= */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #1e1e2f;   
+            padding: 24px;
+            color: #e0e4e8;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #a3e0b0, #6c9eff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        .badge {
+            background: #2c2c3a;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: #9aa9c1;
+            border: 1px solid #3a3a4a;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* Cards dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: #252531;
+            border-radius: 20px;
+            padding: 22px 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.1);
+            border: 1px solid #33333f;
+            transition: transform 0.1s ease, border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: #4f5b7a;
+        }
+
+        .card h3 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9ca3bb;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .card .value {
+            font-size: 40px;
+            font-weight: 700;
+            color: #f0f3fa;
+            line-height: 1.2;
+        }
+
+        .card .unit {
+            font-size: 16px;
+            font-weight: 400;
+            color: #8f98b3;
+            margin-left: 5px;
+        }
+
+        .card .trend {
+            font-size: 12px;
+            margin-top: 12px;
+            color: #9ca3bb;
+            border-top: 1px dashed #2e2e3e;
+            padding-top: 8px;
+        }
+
+        /* Paneles de control */
+        .panel-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .control-group {
+            background: #252531;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #33333f;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .control-group h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #d1d9f0;
+            letter-spacing: -0.2px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 40px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            background: #2e2e3e;
+            color: #e0e4e8;
+            border: 1px solid #3f3f52;
+        }
+
+        .btn-primary {
+            background: #1d4ed8;
+            color: white;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary:hover {
+            background: #2e5ef0;
+            transform: scale(0.97);
+        }
+
+        .btn-danger {
+            background: #b91c1c;
+            color: white;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background: #cd2a2a;
+        }
+
+        .btn-secondary {
+            background: #2c2c3a;
+            color: #cbd5e6;
+            border: 1px solid #45455a;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a4c;
+        }
+
+        .btn-active {
+            background: #0f7b3a;
+            color: white;
+            border: none;
+            box-shadow: 0 0 5px #1faa55;
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #1f1f2c;
+            color: #cbd5e1;
+            margin-top: 14px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #3a3a4e;
+        }
+
+        .badge-status.on {
+            background: #0f6e38;
+            color: #e2ffe6;
+            border-color: #2aaf66;
+        }
+
+        .badge-status.off {
+            background: #991b1b;
+            color: #ffe2e2;
+            border-color: #e54848;
+        }
+
+        /* Info section */
+        .info-section {
+            background: #252531;
+            border-radius: 20px;
+            padding: 22px 24px;
+            margin-top: 24px;
+            border: 1px solid #33333f;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .info-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            color: #eef3ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-row {
+            background: #1e1e2a;
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-left: 3px solid #3b6eff;
+        }
+
+        .config-row span {
+            color: #9ca3bb;
+            font-weight: 500;
+        }
+
+        .config-row strong {
+            color: #e2e8ff;
+            font-weight: 600;
+        }
+
+        .separator {
+            height: 1px;
+            background: #353544;
+            margin: 18px 0;
+        }
+
+        .semana-input {
+            background: #1f1f2c;
+            border: 1px solid #40405c;
+            padding: 10px 12px;
+            border-radius: 30px;
+            color: #f0f3fa;
+            font-weight: 500;
+            width: 85px;
+            text-align: center;
+            outline: none;
+        }
+
+        .semana-input:focus {
+            border-color: #5f7eff;
+        }
+
+        form {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Historial (tabla) */
+        .historial {
+            background: #252531;
+            border-radius: 20px;
+            margin-top: 32px;
+            border: 1px solid #33333f;
+            overflow: auto;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .historial h3 {
+            padding: 18px 20px 6px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #eef3ff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 20px;
+            background: #1e1e2c;
+            color: #b9c2dd;
+            font-weight: 600;
+            border-bottom: 1px solid #353546;
+        }
+
+        td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #2e2e3e;
+            color: #ccd6f0;
+        }
+
+        tr:hover td {
+            background: #2b2b38;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 36px;
+            font-size: 12px;
+            color: #7e86a3;
+            border-top: 1px solid #2a2a38;
+            padding-top: 24px;
+        }
+
+        /* Scroll personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1f1f2c;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #494a60;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #676e8f;
+        }
+
+        button, .btn, .semana-input, a {
+            transition: all 0.2s;
+        }
+
+        /* micro ajustes responsiveness */
+        @media (max-width: 640px) {
+            body {
+                padding: 16px;
+            }
+            .card .value {
+                font-size: 30px;
+            }
+            .btn {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class='container'>
+    <div class='header'>
+        <h1>🌱 Grow Control · Dashboard</h1>
+        <div class='badge'>📡 %IP%</div>
+    </div>
+
+    <!-- Dashboard sensores -->
+    <div class='dashboard'>
+        <div class='card'><h3>🌡️ Temperatura</h3><div class='value'>%TEMP%<span class='unit'>°C</span></div><div class='trend'>📈 %TENDENCIA_TEMP%</div></div>
+        <div class='card'><h3>💧 Humedad</h3><div class='value'>%HUM%<span class='unit'>%</span></div><div class='trend'>🌿 Óptimo: %OPTIMO_HUM%</div></div>
+        <div class='card'><h3>🌍 Suelo</h3><div class='value'>%SUELO%<span class='unit'>%</span></div><div class='trend'>💧 Riego &lt; %RIEGO%</div></div>
+        <div class='card'><h3>📊 VPD</h3><div class='value'>%VPD%<span class='unit'>kPa</span></div><div class='trend'>🎯 Objetivo: %VPD_OBJ% kPa</div></div>
+    </div>
+
+    <!-- Paneles de control -->
+    <div class='panel-controls'>
+        <div class='control-group'><h3>💧 Riego</h3><div class='button-group'><a href='/riego' class='btn btn-primary'>🚿 Riego Manual</a></div></div>
+        
+        <div class='control-group'><h3>💡 Luces</h3>
+            <div class='button-group'>
+                <a href='/lucesManual?estado=on' class='btn btn-primary'>💡 Encender (1h)</a>
+                <a href='/lucesManual?estado=off' class='btn btn-danger'>🌙 Apagar (1h)</a>
+            </div>
+            <div class='button-group'>
+                <a href='/luces?modo=flor' class='btn %FLOR_ACTIVE%'>🌙 Floración</a>
+                <a href='/luces?modo=veg' class='btn %VEG_ACTIVE%'>☀️ Vegetativo</a>
+            </div>
+        </div>
+
+        <div class='control-group'><h3>🌀 Extractor</h3>
+            <div class='button-group'>
+                <a href='/manualExtractor?estado=on' class='btn btn-primary'>🔧 ON</a>
+                <a href='/manualExtractor?estado=off' class='btn btn-secondary'>🔧 OFF</a>
+                <a href='/modoExtractor?modo=1' class='btn btn-secondary'>⏱️ Intermitente</a>
+                <a href='/modoExtractor?modo=2' class='btn btn-secondary'>🤖 Automático</a>
+            </div>
+            <div class='badge-status %EXTRACTOR_CLASE%'>Estado: %EXTRACTOR_ESTADO% | Modo: %MODO_EXTRACTOR%</div>
+        </div>
+
+        <div class='control-group'><h3>🌬️ Intractor</h3>
+            <div class='button-group'>
+                <a href='/manualIntractor?estado=on' class='btn btn-primary'>🔧 ON</a>
+                <a href='/manualIntractor?estado=off' class='btn btn-secondary'>🔧 OFF</a>
+                <a href='/modoIntractor?modo=1' class='btn btn-secondary'>⏱️ Intermitente</a>
+                <a href='/modoIntractor?modo=2' class='btn btn-secondary'>🤖 Automático</a>
+            </div>
+            <div class='badge-status %INTRACTOR_CLASE%'>Estado: %INTRACTOR_ESTADO% | Modo: %MODO_INTRACTOR%</div>
+        </div>
+    </div>
+
+    <!-- Información extra y configuración -->
+    <div class='info-section'>
+        <h3>📋 Resumen del Cultivo</h3>
+        <div class='config-row'><span>🌡️ Presión atmosférica:</span><strong>%PRES% hPa · %INTERPRETACION%</strong></div>
+        <div class='config-row'><span>🗓️ Semana de cultivo:</span><strong>%SEMANA% (%CICLO_LUCES%)</strong></div>
+        <div class='config-row'><span>🎯 VPD objetivo:</span><strong>%VPD_OBJ% kPa</strong></div>
+        <div class='separator'></div>
+        <form action='/setSemana' method='get' style='display:flex;align-items:center;gap:12px;flex-wrap:wrap;'>
+            <label style="color:#b9c2dd; font-weight:500;">🍃 Cambiar semana:</label>
+            <input type='number' name='semana' min='1' max='8' value='%SEMANA%' class='semana-input'>
+            <input type='submit' value='Actualizar' class='btn btn-primary'>
+            <a href='/config' class='btn btn-secondary'>⚙️ Configuración avanzada</a>
+            <a href='/' class='btn btn-secondary'>🔄 Refrescar</a>
+        </form>
+    </div>
+
+    <!-- Historial de lecturas estilo tabla oscura -->
+    <div class='historial'>
+        <h3>📜 Historial de lecturas</h3>
+        %HISTORIAL%
+    </div>
+
+    <div class='footer'>🌿 Grow Control v2.0 · Modo Dark · %IP%</div>
+</div>
+
+<!-- Auto-refresco cada 30 segundos -->
+<script>
+    setTimeout(() => { location.reload(); }, 30000);
+</script>
+</body>
+</html>

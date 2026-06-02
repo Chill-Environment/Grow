@@ -17,5 +17,6 @@ void handleSetVPDTarget(AsyncWebServerRequest *request);
 void handleConfig(AsyncWebServerRequest *request);
 void handleSaveConfig(AsyncWebServerRequest *request);
 void handleResetConfig(AsyncWebServerRequest *request);
+void forzarLecturaInmediata();
 
 #endif

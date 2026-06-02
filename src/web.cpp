@@ -14,6 +14,50 @@ extern AsyncWebServer server;
 
 AsyncEventSource events("/logs");
 
+// ========== DECLARACIÓN ANTICIPADA DE logToWeb (NECESARIO) ==========
+void logToWeb(const char* format, ...);
+
+// ========== FUNCIÓN PARA FORZAR LECTURA INMEDIATA ==========
+void forzarLecturaInmediata() {
+    time_t now;
+    time(&now);
+    char timeStr[20];
+    strftime(timeStr, sizeof(timeStr), "%d/%m/%Y %H:%M", localtime(&now));
+    
+    float temp, hum, pres, vpd, suelo;
+    if (readTempHumi(temp, hum)) {
+        ultimaTempValida = temp;
+        ultimaHumedadValida = hum;
+        hayDatosValidos = true;
+    } else if (hayDatosValidos) {
+        temp = ultimaTempValida;
+        hum = ultimaHumedadValida;
+    } else {
+        logToWeb("⚠️ forzarLecturaInmediata: No hay datos válidos\n");
+        return;
+    }
+    
+    pres = readPressure();
+    vpd = computeVPD(temp, hum);
+    suelo = readSoilMoisture();
+    
+    // Agregar a tendencias e historial
+    agregarHistorialTendencia(temp, hum, vpd, pres);
+    sumTemp += temp; 
+    sumHA += hum; 
+    sumSuelo += suelo; 
+    sumVPD += vpd; 
+    sumPresion += pres;
+    readingsCount++;
+    agregarAlHistorial(timeStr, temp, hum, suelo, vpd, pres);
+    
+    // Resetear el timer para que la siguiente lectura sea en 10 minutos
+    lastSensorRead = millis();
+    
+    logToWeb("📊 Lectura forzada por acción manual - Historial actualizado [%s] T:%.1f H:%.1f S:%.1f\n", 
+             timeStr, temp, hum, suelo);
+}
+
 void initWebServer() {
   if (adminUser.length() == 0) adminUser = "admin";
   if (adminPass.length() == 0) adminPass = "adminfumon";
@@ -108,7 +152,7 @@ void initWebServer() {
 
 }
 
-// Función para enviar logs a todos los clientes conectados
+// ========== DEFINICIÓN DE logToWeb ==========
 void logToWeb(const char* format, ...) {
   char buffer[512];
   va_list args;
@@ -123,11 +167,14 @@ void logToWeb(const char* format, ...) {
   events.send(buffer, "log", millis());
 }
 
+// ========== HANDLERS ==========
+
 void handleRiegoManual(AsyncWebServerRequest *request) {
   if (!riegoEnProgreso) {
     controlarSonoff(SONOFF1_TOPIC, true);
     riegoEnProgreso = true;
     lastRiegoStart = millis();
+    forzarLecturaInmediata();
   }
   request->redirect("/");
 }
@@ -137,6 +184,7 @@ void handleModoLuces(AsyncWebServerRequest *request) {
     modoFloracion = (request->arg("modo") == "flor");
     lucesManualMode = false;
     guardarEstado();
+    forzarLecturaInmediata();
   }
   request->redirect("/");
 }
@@ -147,6 +195,7 @@ void handleLucesManual(AsyncWebServerRequest *request) {
     lucesManualState = (request->arg("estado") == "on");
     lucesManualTimeout = millis();
     controlarSonoff(SONOFF2_TOPIC, lucesManualState);
+    forzarLecturaInmediata();
   }
   request->redirect("/");
 }
@@ -155,8 +204,8 @@ void handleModoExtractor(AsyncWebServerRequest *request) {
   if (request->hasArg("modo")) {
     modoExtractor = request->arg("modo").toInt();
     guardarEstado();
-    // Forzar una actualización inmediata del estado del extractor
     controlExtractor();
+    forzarLecturaInmediata();
   }
   request->redirect("/");
 }
@@ -170,6 +219,7 @@ void handleManualExtractor(AsyncWebServerRequest *request) {
     modoExtractor = 0;
     logToWeb("   modoExtractor después=%d\n", modoExtractor);
     guardarEstado();
+    forzarLecturaInmediata();
   } else {
     logToWeb("⚠️ ManualExtractor: no hay argumento 'estado'\n");
   }
@@ -182,6 +232,7 @@ void handleSetSemana(AsyncWebServerRequest *request) {
     if (nuevaSemana >= 1 && nuevaSemana <= 8) {
       semanaCultivo = nuevaSemana;
       guardarEstado();
+      forzarLecturaInmediata();
     }
   }
   request->redirect("/");
@@ -201,7 +252,6 @@ void handleConfig(AsyncWebServerRequest *request) {
     String html = file.readString();
     file.close();
 
-    // Leer valores actuales del archivo config.txt
     String current_ssid = "";
     String current_mqtt_server = "";
     String current_mqtt_user = "";
@@ -229,7 +279,6 @@ void handleConfig(AsyncWebServerRequest *request) {
         configFile.close();
     }
 
-    // Reemplazar marcadores
     html.replace("%SSID%", current_ssid);
     html.replace("%MQTT_SERVER%", current_mqtt_server);
     html.replace("%MQTT_USER%", current_mqtt_user);
@@ -237,13 +286,11 @@ void handleConfig(AsyncWebServerRequest *request) {
     html.replace("%CHAT_ID%", current_chat_id);
     html.replace("%TELEGRAM_STATUS%", current_telegram_token.length() > 0 ? "Configurado ✓" : "No configurado");
     
-    // Reemplazar selección de semana
     for (int i = 1; i <= 8; i++) {
         String marker = "%SEL_SEMANA" + String(i) + "%";
         html.replace(marker, (current_semana == i) ? "selected" : "");
     }
     
-    // Reemplazar selección de modo
     html.replace("%SEL_FLOR%", (current_modo == "floracion") ? "selected" : "");
     html.replace("%SEL_VEG%", (current_modo == "vegetativo") ? "selected" : "");
 
@@ -259,7 +306,6 @@ void handleRoot(AsyncWebServerRequest *request) {
     String html = file.readString();
     file.close();
 
-    // Obtener valores actuales (igual que antes)
     float temp, hum;
     if (!readTempHumi(temp, hum)) {
         temp = ultimaTempValida;
@@ -274,7 +320,6 @@ void handleRoot(AsyncWebServerRequest *request) {
     String modoIntractorStr = (modoIntractor == 0) ? "Manual" : ((modoIntractor == 1) ? "Intermitente" : "Automático");
     String cicloLucesStr = modoFloracion ? "Floración 12/12" : "Vegetativo 18/6";
 
-    // Reemplazar marcadores
     html.replace("%IP%", WiFi.localIP().toString());
     html.replace("%TEMP%", String(temp, 1));
     html.replace("%HUM%", String(hum, 1));

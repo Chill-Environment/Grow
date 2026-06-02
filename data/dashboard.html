@@ -6,19 +6,21 @@
     <title>Grow Control - Dashboard</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#F4F6F9;padding:24px;color:#1A1A2E;}
+        
+        /* ===== ESTILOS BASE (TEMA CLARO POR DEFECTO) ===== */
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#F4F6F9;padding:24px;color:#1A1A2E;transition:background 0.3s, color 0.3s;}
         .container{max-width:1280px;margin:0 auto;}
         .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px;}
         .header h1{font-size:24px;font-weight:600;color:#1A1A2E;display:flex;align-items:center;gap:8px;}
         .badge{background:#E8ECF4;padding:6px 14px;border-radius:20px;font-size:12px;color:#0052CC;font-family:monospace;}
         .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-bottom:32px;}
-        .card{background:#FFFFFF;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid #E8ECF4;}
+        .card{background:#FFFFFF;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid #E8ECF4;transition:background 0.3s, border-color 0.3s;}
         .card h3{font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:#6C757D;margin-bottom:12px;}
         .card .value{font-size:36px;font-weight:700;color:#1A1A2E;}
         .card .unit{font-size:14px;font-weight:400;color:#6C757D;margin-left:4px;}
         .card .trend{font-size:12px;margin-top:8px;color:#6C757D;}
         .panel-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:32px;}
-        .control-group{background:#FFFFFF;border-radius:16px;padding:20px;border:1px solid #E8ECF4;}
+        .control-group{background:#FFFFFF;border-radius:16px;padding:20px;border:1px solid #E8ECF4;transition:background 0.3s, border-color 0.3s;}
         .control-group h3{font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
         .button-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:12px;}
         .btn{display:inline-block;padding:10px 16px;border-radius:8px;text-decoration:none;text-align:center;font-weight:500;font-size:13px;transition:all 0.2s;border:none;cursor:pointer;}
@@ -29,26 +31,90 @@
         .badge-status{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;background:#F4F6F9;color:#1A1A2E;margin-top:12px;}
         .badge-status.on{background:#00A86B;color:white;}
         .badge-status.off{background:#E53935;color:white;}
-        .info-section{background:#FFFFFF;border-radius:16px;padding:20px;margin-top:24px;border:1px solid #E8ECF4;}
-        .historial{background:#FFFFFF;border-radius:16px;margin-top:32px;border:1px solid #E8ECF4;overflow:auto;}
+        .info-section{background:#FFFFFF;border-radius:16px;padding:20px;margin-top:24px;border:1px solid #E8ECF4;transition:background 0.3s, border-color 0.3s;}
+        .historial{background:#FFFFFF;border-radius:16px;margin-top:32px;border:1px solid #E8ECF4;overflow:auto;transition:background 0.3s, border-color 0.3s;}
         table{width:100%;border-collapse:collapse;font-size:13px;}
         th{text-align:left;padding:16px 20px;background:#F8FAFE;}
         td{padding:12px 20px;border-bottom:1px solid #F0F2F5;}
         .footer{text-align:center;margin-top:32px;font-size:12px;color:#6C757D;}
+        .semana-input{background:#FFFFFF;border:1px solid #E8ECF4;padding:8px 12px;border-radius:8px;width:80px;text-align:center;}
+        .config-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #E8ECF4;}
+        .separator{height:1px;background:#E8ECF4;margin:16px 0;}
+        
+        /* ===== TEMA OSCURO ===== */
+        body.dark-theme {
+            background: #1e1e2f;
+            color: #e0e4e8;
+        }
+        body.dark-theme .card,
+        body.dark-theme .control-group,
+        body.dark-theme .info-section,
+        body.dark-theme .historial {
+            background: #252531;
+            border-color: #33333f;
+        }
+        body.dark-theme .card .value,
+        body.dark-theme .config-row strong {
+            color: #f0f3fa;
+        }
+        body.dark-theme .btn-secondary {
+            background: #2c2c3a;
+            color: #cbd5e6;
+            border-color: #45455a;
+        }
+        body.dark-theme .badge-status {
+            background: #1f1f2c;
+            color: #cbd5e1;
+        }
+        body.dark-theme table th {
+            background: #1e1e2c;
+            color: #b9c2dd;
+        }
+        body.dark-theme table td {
+            border-bottom-color: #2e2e3e;
+            color: #ccd6f0;
+        }
+        body.dark-theme .semana-input {
+            background: #1f1f2c;
+            border-color: #40405c;
+            color: #f0f3fa;
+        }
+        body.dark-theme .badge {
+            background: #2c2c3a;
+            color: #9aa9c1;
+            border-color: #3a3a4a;
+        }
+        body.dark-theme .config-row {
+            border-bottom-color: #2e2e3e;
+        }
+        body.dark-theme .separator {
+            background: #353544;
+        }
+        body.dark-theme .header h1 {
+            background: linear-gradient(135deg, #a3e0b0, #6c9eff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
     </style>
 </head>
 <body>
 <div class='container'>
     <div class='header'>
         <h1>🌱 Grow Control</h1>
-        <div class='badge'>📡 %IP%</div>
+        <div style='display: flex; gap: 12px; align-items: center;'>
+            <button id='themeToggle' class='btn btn-secondary' style='padding: 6px 12px;'>🌙 Modo Oscuro</button>
+            <div class='badge'>📡 %IP%</div>
+        </div>
     </div>
+    
     <div class='dashboard'>
         <div class='card'><h3>🌡️ Temperatura</h3><div class='value'>%TEMP%<span class='unit'>°C</span></div><div class='trend'>%TENDENCIA_TEMP%</div></div>
         <div class='card'><h3>💧 Humedad</h3><div class='value'>%HUM%<span class='unit'>%</span></div><div class='trend'>Óptimo: %OPTIMO_HUM%</div></div>
         <div class='card'><h3>🌍 Suelo</h3><div class='value'>%SUELO%<span class='unit'>%</span></div><div class='trend'>Riego &lt; %RIEGO%</div></div>
         <div class='card'><h3>📊 VPD</h3><div class='value'>%VPD%<span class='unit'>kPa</span></div><div class='trend'>Objetivo: %VPD_OBJ% kPa</div></div>
     </div>
+    
     <div class='panel-controls'>
         <div class='control-group'><h3>💧 Riego</h3><div class='button-group'><a href='/riego' class='btn btn-primary'>🚿 Riego Manual</a></div></div>
         <div class='control-group'><h3>💡 Luces</h3>
@@ -64,6 +130,7 @@
             <div class='badge-status %INTRACTOR_CLASE%'>Estado: %INTRACTOR_ESTADO% | Modo: %MODO_INTRACTOR%</div>
         </div>
     </div>
+    
     <div class='info-section'>
         <h3>📊 Resumen del Cultivo</h3>
         <div class='config-row'><span>Presión atmosférica:</span><strong>%PRES% hPa | %INTERPRETACION%</strong></div>
@@ -78,12 +145,52 @@
             <a href='/' class='btn btn-secondary'>🔄 Refrescar</a>
         </form>
     </div>
+    
     <div class='historial'>
         <h3>📜 Historial de lecturas</h3>
         %HISTORIAL%
     </div>
+    
     <div class='footer'>Grow Control v2.0 | %IP%</div>
 </div>
-<script>setTimeout(()=>{location.reload()},30000);</script>
+
+<script>
+    // ===== TEMA OSCURO/CLARO =====
+    const themeToggle = document.getElementById('themeToggle');
+    
+    // Verificar preferencia guardada o preferencia del sistema
+    const savedTheme = localStorage.getItem('growTheme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let isDark = savedTheme === 'dark' || (savedTheme === null && prefersDark);
+    
+    function applyTheme() {
+        if (isDark) {
+            document.body.classList.add('dark-theme');
+            themeToggle.innerHTML = '☀️ Modo Claro';
+            themeToggle.classList.remove('btn-secondary');
+            themeToggle.classList.add('btn-primary');
+        } else {
+            document.body.classList.remove('dark-theme');
+            themeToggle.innerHTML = '🌙 Modo Oscuro';
+            themeToggle.classList.remove('btn-primary');
+            themeToggle.classList.add('btn-secondary');
+        }
+        localStorage.setItem('growTheme', isDark ? 'dark' : 'light');
+    }
+    
+    themeToggle.addEventListener('click', () => {
+        isDark = !isDark;
+        applyTheme();
+    });
+    
+    // Aplicar tema al cargar la página
+    applyTheme();
+</script>
+
+<script>
+    // Auto-refresco cada 30 segundos
+    setTimeout(() => { location.reload(); }, 30000);
+</script>
+
 </body>
 </html>

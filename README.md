@@ -13,7 +13,7 @@
 
 ### Control
 - Riego automático por umbral
-- Luces: Floración 12/12 o Vegetativo 17/7
+- Luces: Floración 12/12 o Vegetativo 18/6
 - Extractor automático por VPD, temperatura o humedad
 - Intractor automático por humedad
 
