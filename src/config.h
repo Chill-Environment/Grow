@@ -93,6 +93,24 @@ extern float sumTemp, sumHA, sumSuelo, sumVPD, sumPresion;
 extern int readingsCount;
 extern float maxTemp, minTemp, maxHA, minHA, maxPresion, minPresion;
 
+// ========== CONSTANTES DE COOLDOWN ==========
+extern const unsigned long MIN_COOLDOWN_EXTRACTOR;
+extern const unsigned long MIN_COOLDOWN_LUCES;
+extern const unsigned long MIN_COOLDOWN_BOMBA;
+extern const unsigned long MIN_COOLDOWN_INTRACTOR;
+
+// ========== TIMERS PARA COOLDOWN ==========
+extern unsigned long lastExtractorChange;
+extern unsigned long lastLucesChange;
+extern unsigned long lastBombaChange;
+extern unsigned long lastIntractorChange;
+
+// ========== ESTADOS ANTERIORES ==========
+extern bool lastExtractorEstado;
+extern bool lastLucesEstado;
+extern bool lastBombaEstado;
+extern bool lastIntractorEstado;
+
 // ========== HISTORIAL WEB ==========
 #define MAX_HISTORIAL 15
 struct Lectura {

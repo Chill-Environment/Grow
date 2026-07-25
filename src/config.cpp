@@ -3,17 +3,28 @@
 #include <Preferences.h>
 #include "config.h"
 
-// ========== CONSTANTES ==========
+// ===== SENSORES DE SUELO =====
 const int soilPins[4] = {32, 33, 34, 35};
-const int dryValue = 2700;
-const int wetValue = 1200;
-const int sueloMinRiego = 35;
-const int humAireMin = 60;
-const int tempMin = 20;
-const int sueloMinAlerta = 35;
-const unsigned long cooldownRiegoMs = 86400000;
-const unsigned long riegoDuration = 10000;
-const unsigned long lucesManualDuration = 3600000;
+const int dryValue = 2700;    // Valor seco (ajustar según calibración)
+const int wetValue = 1200;    // Valor húmedo (ajustar según calibración)
+
+// ===== UMBRALES DE RIEGO =====
+const int sueloMinRiego = 35;     // % mínimo para iniciar riego
+const int humAireMin = 60;        // % humedad ambiente mínima para regar
+const int tempMin = 20;           // Temperatura mínima para regar (°C)
+const int sueloMinAlerta = 35;    // % para alerta de sequía
+
+// ===== TIEMPOS =====
+const unsigned long cooldownRiegoMs = 86400000;    // 24h entre riegos
+const unsigned long riegoDuration = 10000;          // 10s de riego
+const unsigned long lucesManualDuration = 3600000;  // 1h luces manuales
+
+// ===== COOLDOWNS =====
+const unsigned long MIN_COOLDOWN_EXTRACTOR = 60000;   // 60s entre cambios
+const unsigned long MIN_COOLDOWN_LUCES = 30000;       // 30s entre cambios
+const unsigned long MIN_COOLDOWN_BOMBA = 30000;       // 30s entre cambios
+const unsigned long MIN_COOLDOWN_INTRACTOR = 60000;   // 60s entre cambios
+const unsigned long MIN_COOLDOWN_RIEGO = 30000;       // 30s entre ciclos
 
 // ========== VARIABLES DE CONFIGURACIÓN ==========
 String config_ssid = "";
@@ -73,6 +84,18 @@ float maxTemp = 0, minTemp = 100, maxHA = 0, minHA = 100, maxPresion = 0, minPre
 
 Lectura historial[MAX_HISTORIAL];
 int historialIndex = 0, historialCount = 0;
+
+// ========== TIMERS PARA COOLDOWN ==========
+unsigned long lastExtractorChange = 0;
+unsigned long lastLucesChange = 0;
+unsigned long lastBombaChange = 0;
+unsigned long lastIntractorChange = 0;
+
+// ========== ESTADOS ANTERIORES PARA DETECTAR CAMBIOS ==========
+bool lastExtractorEstado = false;
+bool lastLucesEstado = false;
+bool lastBombaEstado = false;
+bool lastIntractorEstado = false;
 
 // ========== FUNCIONES DE ESTADO (con logs) ==========
 void guardarEstado() {
