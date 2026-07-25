@@ -112,7 +112,7 @@ extern bool lastBombaEstado;
 extern bool lastIntractorEstado;
 
 // ========== HISTORIAL WEB ==========
-#define MAX_HISTORIAL 15
+#define MAX_HISTORIAL 24
 struct Lectura {
   char tiempo[20];
   float temp;

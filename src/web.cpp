@@ -190,14 +190,21 @@ void handleModoLuces(AsyncWebServerRequest *request) {
 }
 
 void handleLucesManual(AsyncWebServerRequest *request) {
-  if (request->hasArg("estado")) {
-    lucesManualMode = true;
-    lucesManualState = (request->arg("estado") == "on");
-    lucesManualTimeout = millis();
-    controlarSonoff(SONOFF2_TOPIC, lucesManualState);
-    forzarLecturaInmediata();
-  }
-  request->redirect("/");
+    if (request->hasArg("estado")) {
+        if (request->arg("estado") == "on") {
+            lucesManualMode = true;
+            lucesManualState = true;
+            controlarSonoff(SONOFF2_TOPIC, true);
+        } else if (request->arg("estado") == "off") {
+            lucesManualMode = true;
+            lucesManualState = false;
+            controlarSonoff(SONOFF2_TOPIC, false);
+        } else if (request->arg("estado") == "auto") {
+            lucesManualMode = false; // Volver a automático
+        }
+        lucesManualTimeout = millis();
+    }
+    request->redirect("/");
 }
 
 void handleModoExtractor(AsyncWebServerRequest *request) {

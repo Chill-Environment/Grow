@@ -122,7 +122,7 @@ void loop() {
     primeraVez = false;
   }
 
-  if (millis() - lastSensorRead >= 600000) {
+  if (millis() - lastSensorRead >= 3600000) {
     lastSensorRead = millis();
     time_t now;
     time(&now);
