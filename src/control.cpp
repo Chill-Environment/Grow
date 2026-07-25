@@ -76,7 +76,7 @@ void controlLuces() {
         
         time_t now;
         time(&now);
-        int hora = localtime(&now)->tm_hour;  // CORREGIDO: tm_hour en lugar de tm_hora
+        int hora = localtime(&now)->tm_hour;  
         
         // Horario optimizado según etapa
         if (modoFloracion) {
