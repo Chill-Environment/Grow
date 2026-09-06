@@ -64,6 +64,7 @@ String lastReportDate = "";
 unsigned long lastLightsCheck = 0;
 unsigned long lastLuzPublish = 0;
 unsigned long lastExtractorPublish = 0;
+unsigned long lastIntractorPublish = 0;
 const unsigned long PUBLISH_COOLDOWN = 2000;
 
 float ultimaTempValida = 0, ultimaHumedadValida = 0;

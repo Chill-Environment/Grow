@@ -117,6 +117,18 @@ void initWebServer() {
     handleManualExtractor(request);
   });
 
+  server.on("/manualIntractor", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (!request->authenticate(adminUser.c_str(), adminPass.c_str()))
+      return request->requestAuthentication();
+    handleManualIntractor(request);
+  });
+
+  server.on("/modoIntractor", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (!request->authenticate(adminUser.c_str(), adminPass.c_str()))
+     return request->requestAuthentication();
+    handleModoIntractor(request);
+  });
+
   server.on("/setSemana", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (!request->authenticate(adminUser.c_str(), adminPass.c_str()))
       return request->requestAuthentication();
@@ -229,6 +241,28 @@ void handleManualExtractor(AsyncWebServerRequest *request) {
     forzarLecturaInmediata();
   } else {
     logToWeb("⚠️ ManualExtractor: no hay argumento 'estado'\n");
+  }
+  request->redirect("/");
+}
+
+void handleManualIntractor(AsyncWebServerRequest *request) {
+  if (request->hasArg("estado")) {
+    bool encender = (request->arg("estado") == "on");
+    logToWeb("🔧 ManualIntractor: estado=%s\n", encender ? "ON" : "OFF");
+    controlarSonoff(SONOFF4_TOPIC, encender);
+    modoIntractor = 0;   // cambiar a manual
+    guardarEstado();
+    forzarLecturaInmediata();
+  }
+  request->redirect("/");
+}
+
+void handleModoIntractor(AsyncWebServerRequest *request) {
+  if (request->hasArg("modo")) {
+    modoIntractor = request->arg("modo").toInt();
+    guardarEstado();
+    controlIntractor();   // fuerza actualización
+    forzarLecturaInmediata();
   }
   request->redirect("/");
 }

@@ -250,10 +250,13 @@ void controlIntractor() {
     // Verificar cooldown antes de cambiar
     if (intractorOn != intractorEstado) {
         if (canChangeState(lastIntractorChange, MIN_COOLDOWN_INTRACTOR, "Intractor")) {
-            // TODO: Configurar tópico MQTT para intractor
-            // controlarSonoff("cmnd/sonoff_intractor/power", intractorOn);
-            registerStateChange("Intractor", lastIntractorChange, lastIntractorEstado, intractorOn);
-            intractorEstado = intractorOn;
+            if (millis() - lastIntractorPublish > PUBLISH_COOLDOWN) {
+                lastIntractorPublish = millis();
+                // Publicar por MQTT
+                controlarSonoff(SONOFF4_TOPIC, intractorOn);
+                registerStateChange("Intractor", lastIntractorChange, lastIntractorEstado, intractorOn);
+                intractorEstado = intractorOn;
+            }
         }
     } else {
         lastIntractorEstado = intractorEstado;

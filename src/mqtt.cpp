@@ -35,6 +35,9 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   else if (topicStr == SONOFF3_STAT) {
     extractorEstado = (message == "ON");
   }
+  else if (topicStr == SONOFF4_STAT) {        // NUEVO
+    intractorEstado = (message == "ON");
+  }
   else if (topicStr == "tele/sonoff_luz/STATE") {
     if (message.indexOf("\"POWER\":\"ON\"") > 0) luzEstado = true;
     else if (message.indexOf("\"POWER\":\"OFF\"") > 0) luzEstado = false;
@@ -56,6 +59,7 @@ void reconnectMQTT() {
       mqttClient.subscribe(SONOFF1_STAT);
       mqttClient.subscribe(SONOFF2_STAT);
       mqttClient.subscribe(SONOFF3_STAT);
+      mqttClient.subscribe(SONOFF4_STAT);
     } else {
       intentos++;
       if (intentos >= 5) desconexionesMQTT++;
@@ -94,6 +98,8 @@ void inicializarEstados() {
   bombaEstado = false;
   controlarSonoff(SONOFF3_TOPIC, false);
   extractorEstado = false;
+  controlarSonoff(SONOFF4_TOPIC, false);   // NUEVO
+  intractorEstado = false;
   time_t now;
   time(&now);
   int hora = localtime(&now)->tm_hour;

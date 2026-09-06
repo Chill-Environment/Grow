@@ -12,6 +12,8 @@ void handleModoLuces(AsyncWebServerRequest *request);
 void handleLucesManual(AsyncWebServerRequest *request);
 void handleModoExtractor(AsyncWebServerRequest *request);
 void handleManualExtractor(AsyncWebServerRequest *request);
+void handleManualIntractor(AsyncWebServerRequest *request);
+void handleModoIntractor(AsyncWebServerRequest *request);
 void handleSetSemana(AsyncWebServerRequest *request);
 void handleSetVPDTarget(AsyncWebServerRequest *request);
 void handleConfig(AsyncWebServerRequest *request);

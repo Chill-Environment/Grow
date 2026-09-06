@@ -30,9 +30,11 @@ extern const unsigned long lucesManualDuration;
 #define SONOFF1_TOPIC "cmnd/sonoff_bomba/power"
 #define SONOFF2_TOPIC "cmnd/sonoff_luz/power"
 #define SONOFF3_TOPIC "cmnd/sonoff-extractor/power"
+#define SONOFF4_TOPIC "cmnd/sonoff_intractor/power"
 #define SONOFF1_STAT "stat/sonoff_bomba/POWER"
 #define SONOFF2_STAT "stat/sonoff_luz/POWER"
 #define SONOFF3_STAT "stat/sonoff-extractor/POWER"
+#define SONOFF4_STAT "stat/sonoff_intractor/POWER" 
 
 // ========== VARIABLES DE CONFIGURACIÓN ==========
 extern String config_ssid;
@@ -72,6 +74,7 @@ extern bool dailyReportSent;
 extern unsigned long lastLightsCheck;
 extern unsigned long lastLuzPublish;
 extern unsigned long lastExtractorPublish;
+extern unsigned long lastIntractorPublish;
 extern const unsigned long PUBLISH_COOLDOWN;
 
 // ========== VARIABLES PARA FALLOS Y TENDENCIAS ==========
