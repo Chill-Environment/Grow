@@ -52,6 +52,7 @@ String generarHistorialHTML() {
       html += "<td>" + String(historial[idx].bomba ? "ON" : "OFF") + "</td>";
       html += "<td>" + String(historial[idx].luces ? "ON" : "OFF") + "</td>";
       html += "<td>" + String(historial[idx].extractor ? "ON" : "OFF") + "</td>";
+      html += "<td>" + String(historial[idx].intractor ? "ON" : "OFF") + "</td>";  // NUEVO
       html += "</tr>";
     }
   }
