@@ -39,7 +39,9 @@ void agregarAlHistorial(const char* tiempo, float temp, float humedad, float sue
 }
 
 String generarHistorialHTML() {
-  String html = "<table border='0' cellpadding='5' cellspacing='0' width='100%'><tr bgcolor='#2d6a4f'><th>Fecha</th><th>T°C</th><th>HA%</th><th>Suelo%</th><th>VPD</th><th>Bomba</th><th>Luces</th><th>Extractor</th></tr>";
+  String htmlString generarHistorialHTML() {
+  // Encabezado con 9 columnas (agregamos Intractor)
+  String html = "<table border='0' cellpadding='5' cellspacing='0' width='100%'><tr bgcolor='#2d6a4f'><th>Fecha</th><th>T°C</th><th>HA%</th><th>Suelo%</th><th>VPD</th><th>Bomba</th><th>Luces</th><th>Extractor</th><th>Intractor</th></tr>"; = "<table border='0' cellpadding='5' cellspacing='0' width='100%'><tr bgcolor='#2d6a4f'><th>Fecha</th><th>T°C</th><th>HA%</th><th>Suelo%</th><th>VPD</th><th>Bomba</th><th>Luces</th><th>Extractor</th></tr>";
   for (int i = 0; i < historialCount; i++) {
     int idx = (historialIndex - 1 - i + MAX_HISTORIAL) % MAX_HISTORIAL;
     if (strlen(historial[idx].tiempo) > 0) {
